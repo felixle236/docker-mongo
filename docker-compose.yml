@@ -1,0 +1,49 @@
+version: '3.9'
+services:
+    mongo:
+        container_name: mongo
+        image: mongo:4.4
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+            - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+        volumes:
+            - ./data:/data/db
+            - ./config:/etc/mongo
+        ports:
+            - 27017:27017
+        networks:
+            - webnet
+        logging:
+            driver: 'json-file'
+            options:
+                max-size: '8m'
+                max-file: '10'
+        restart: always
+
+    mongo-express:
+        container_name: mongo-express
+        image: mongo-express
+        environment:
+            - ME_CONFIG_MONGODB_SERVER=mongo
+            - ME_CONFIG_MONGODB_PORT=27017
+            - ME_CONFIG_MONGODB_ADMINUSERNAME=${MONGO_INITDB_ROOT_USERNAME}
+            - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+            - ME_CONFIG_BASICAUTH_USERNAME=${ME_CONFIG_BASICAUTH_USERNAME}
+            - ME_CONFIG_BASICAUTH_PASSWORD=${ME_CONFIG_BASICAUTH_PASSWORD}
+        ports:
+            - ${MONGO_EXPRESS_PORT}:8081
+        depends_on:
+            - mongo
+        networks:
+            - webnet
+        logging:
+            driver: 'json-file'
+            options:
+                max-size: '8m'
+                max-file: '10'
+        restart: always
+
+networks:
+    webnet:
+        name: webnet
+        driver: bridge
