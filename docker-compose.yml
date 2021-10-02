@@ -2,13 +2,13 @@ version: '3.9'
 services:
     mongo:
         container_name: mongo
-        image: mongo:4.4
+        image: mongo:5.0.3
         environment:
-            - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
-            - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
+            - MONGO_INITDB_ROOT_USERNAME=${USERNAME}
+            - MONGO_INITDB_ROOT_PASSWORD=${PASSWORD}
         volumes:
-            - ./data:/data/db
-            - ./config:/etc/mongo
+            - ./db:/data/db
+            - ./configdb:/data/configdb
         ports:
             - 27017:27017
         networks:
@@ -26,10 +26,10 @@ services:
         environment:
             - ME_CONFIG_MONGODB_SERVER=mongo
             - ME_CONFIG_MONGODB_PORT=27017
-            - ME_CONFIG_MONGODB_ADMINUSERNAME=${MONGO_INITDB_ROOT_USERNAME}
-            - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
-            - ME_CONFIG_BASICAUTH_USERNAME=${ME_CONFIG_BASICAUTH_USERNAME}
-            - ME_CONFIG_BASICAUTH_PASSWORD=${ME_CONFIG_BASICAUTH_PASSWORD}
+            - ME_CONFIG_MONGODB_ADMINUSERNAME=${USERNAME}
+            - ME_CONFIG_MONGODB_ADMINPASSWORD=${PASSWORD}
+            - ME_CONFIG_BASICAUTH_USERNAME=${AUTH_USERNAME}
+            - ME_CONFIG_BASICAUTH_PASSWORD=${AUTH_PASSWORD}
         ports:
             - ${MONGO_EXPRESS_PORT}:8081
         depends_on:

@@ -1,3 +1,3 @@
 .env
-._data
-data/
+db
+configdb
