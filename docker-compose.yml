@@ -1,16 +1,57 @@
 version: '3.9'
 services:
-    mongo:
-        container_name: mongo
+    mongo1:
+        container_name: mongo1
         image: mongo:5.0.3
+        entrypoint: [ "/usr/bin/mongod", "--keyFile", "/opt/keyfile/shared.key", "--bind_ip_all", "--replSet", "rs0", "--port", "30001" ]
         environment:
-            - MONGO_INITDB_ROOT_USERNAME=${USERNAME}
-            - MONGO_INITDB_ROOT_PASSWORD=${PASSWORD}
+            - USERNAME=${USERNAME}
+            - PASSWORD=${PASSWORD}
         volumes:
-            - ./db:/data/db
-            - ./configdb:/data/configdb
+            - ./setup.sh:/setup.sh
+            - ./shared.key:/opt/keyfile/shared.key
+            - ./mongo/db1:/data/db
+            - ./mongo/configdb1:/data/configdb
         ports:
-            - 27017:27017
+            - 30001:30001
+        networks:
+            - webnet
+        logging:
+            driver: 'json-file'
+            options:
+                max-size: '8m'
+                max-file: '10'
+        restart: always
+
+    mongo2:
+        container_name: mongo2
+        image: mongo:5.0.3
+        entrypoint: [ "/usr/bin/mongod", "--keyFile", "/opt/keyfile/shared.key", "--bind_ip_all", "--replSet", "rs0", "--port", "30002" ]
+        volumes:
+            - ./shared.key:/opt/keyfile/shared.key
+            - ./mongo/db2:/data/db
+            - ./mongo/configdb2:/data/configdb
+        ports:
+            - 30002:30002
+        networks:
+            - webnet
+        logging:
+            driver: 'json-file'
+            options:
+                max-size: '8m'
+                max-file: '10'
+        restart: always
+
+    mongo3:
+        container_name: mongo3
+        image: mongo:5.0.3
+        entrypoint: [ "/usr/bin/mongod", "--keyFile", "/opt/keyfile/shared.key", "--bind_ip_all", "--replSet", "rs0", "--port", "30003" ]
+        volumes:
+            - ./shared.key:/opt/keyfile/shared.key
+            - ./mongo/db3:/data/db
+            - ./mongo/configdb3:/data/configdb
+        ports:
+            - 30003:30003
         networks:
             - webnet
         logging:
@@ -24,16 +65,15 @@ services:
         container_name: mongo-express
         image: mongo-express
         environment:
-            - ME_CONFIG_MONGODB_SERVER=mongo
-            - ME_CONFIG_MONGODB_PORT=27017
-            - ME_CONFIG_MONGODB_ADMINUSERNAME=${USERNAME}
-            - ME_CONFIG_MONGODB_ADMINPASSWORD=${PASSWORD}
+            - ME_CONFIG_MONGODB_URL=mongodb://${USERNAME}:${PASSWORD}@mongo1:30001,mongo2:30002,mongo3:30003?replicaSet=rs0
             - ME_CONFIG_BASICAUTH_USERNAME=${AUTH_USERNAME}
             - ME_CONFIG_BASICAUTH_PASSWORD=${AUTH_PASSWORD}
         ports:
             - ${MONGO_EXPRESS_PORT}:8081
         depends_on:
-            - mongo
+            - mongo1
+            - mongo2
+            - mongo3
         networks:
             - webnet
         logging:
